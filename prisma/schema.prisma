@@ -37,4 +37,7 @@ model Book {
   content   String
   authorId  Int
   author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @updatedAt @db.Timestamp(6)
+  deletedAt DateTime? @db.Timestamp(6)
 }

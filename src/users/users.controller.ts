@@ -8,6 +8,7 @@ import * as moment from 'moment';
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
+    // @Roles('admin')
     @Get()
     async getUsers(@Res() res: Response) {
         try {
@@ -21,7 +22,6 @@ export class UsersController {
             }
 
             const formatData = users.map(user => ({
-                id: user.id, 
                 username: user.username, 
                 name: user.name,
                 email: user.email,
