@@ -20,7 +20,7 @@ import { PrismaModule } from 'prisma/prisma.module';
           throw new Error('JWT_SECRET is missing or undefined');
         }
         return {
-          secret, // Kunci JWT di sini
+          secret,
           signOptions: { expiresIn: '1h' },
         };
       },

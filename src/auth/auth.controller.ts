@@ -1,6 +1,7 @@
 import { Body, Controller, Post, Res, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
+import * as moment from 'moment';
 
 @Controller('auth')
 export class AuthController {
@@ -13,9 +14,18 @@ export class AuthController {
     ) {
         try {
             const newUser = await this.authService.register(body);
+
+            const formatData = {
+                username: newUser.username,
+                name: newUser.name, 
+                email: newUser.email,
+                role: newUser.role, 
+                createdAt: moment(newUser.createdAt).format('YYYY-MM-DD'),
+            }
+
             return res.status(HttpStatus.CREATED).json({
                 message: 'User registered successfully',
-                data: newUser,
+                data: formatData,
             });
         } catch (error) {
             return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
@@ -34,7 +44,9 @@ export class AuthController {
             const { access_token } = await this.authService.login(body.email, body.password);
             return res.status(HttpStatus.OK).json({
                 message: 'Login successful',
-                access_token
+                data: {
+                    token: access_token
+                }
             });
         } catch (error) {
             return res.status(HttpStatus.UNAUTHORIZED).json({

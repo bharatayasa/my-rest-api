@@ -3,12 +3,16 @@ import { PrismaService } from './../../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
+import * as dotenv from 'dotenv';
+import { ConfigService } from '@nestjs/config';
+dotenv.config();
 
 @Injectable()
 export class AuthService {
     constructor(
         private prisma: PrismaService,
-        private jwtService: JwtService
+        private jwtService: JwtService,
+        private readonly configService: ConfigService,
     ) {}
 
     async register(data: { username: string; name: string; email: string; password: string; }): Promise<User> {
@@ -28,37 +32,29 @@ export class AuthService {
     }
 
     async login(email: string, password: string): Promise<{ access_token: string }> {
-        console.log("JWT_SECRET dari .env", process.env.JWT_SECRET);
-    
+
+        const jwtSecret = this.configService.get<string>('JWT_SECRET');
+
         const user = await this.prisma.user.findUnique({
             where: { email }
         });
-    
+
         if (!user) {
             throw new UnauthorizedException('Invalid email or password');
         }
-    
-        console.log("data users", user);
-    
+
         const isPasswordValid = await bcrypt.compare(password, user.password);
-    
+
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid email or password');
         }
-    
-        console.log("password valid:", isPasswordValid);
-    
+
         const payload = { id: user.id, email: user.email, role: user.role };
-    
-        console.log("payload :", payload);
-    
-        try {
-            const access_token = this.jwtService.sign(payload);
-            console.log("akses token :", access_token);
-            return { access_token };
-        } catch (error) {
-            console.error("Error saat membuat access token:", error);
-            throw new UnauthorizedException('Failed to generate access token');
-        }
+
+            const access_token = this.jwtService.sign(payload, {
+                secret: jwtSecret,
+            });
+
+        return { access_token };
     }
 }
