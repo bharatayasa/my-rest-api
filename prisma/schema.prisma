@@ -19,12 +19,15 @@ enum role {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
+  id        Int      @id @default(autoincrement()) 
+  username  String   @db.VarChar(50)
+  name      String   @db.VarChar(50)
+  email     String   @unique @db.VarChar(50)
+  password  String   @db.VarChar(100)
   role      role     @default(user)
   createdAt DateTime @default(now()) @db.Timestamp(6)
   updatedAt DateTime @default(now()) @updatedAt @db.Timestamp(6)
+  deletedAt DateTime? @db.Timestamp(6)
   book      Book[]
 }
 

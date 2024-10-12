@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { UsersService } from './users.service';
 import { role } from '@prisma/client';
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Res } from '@nestjs/common';
@@ -13,8 +13,6 @@ export class UsersController {
         try {
             const users = await this.usersService.findAll();
 
-            console.log("ini data user", users);
-
             if (!users || users.length === 0) { 
                 return res.status(HttpStatus.NOT_FOUND).json({
                     message: "User data not found", 
@@ -24,6 +22,8 @@ export class UsersController {
 
             const formatData = users.map(user => ({
                 id: user.id, 
+                username: user.username, 
+                name: user.name,
                 email: user.email,
                 role: user.role, 
                 createdAt: moment(user.createdAt).format('YYYY-MM-DD'),
@@ -56,6 +56,8 @@ export class UsersController {
 
             const formatData = {
                 id: user.id, 
+                username: user.username, 
+                name: user.name,
                 email: user.email,
                 role: user.role, 
                 createdAt: moment(user.createdAt).format('YYYY-MM-DD'),
@@ -75,12 +77,14 @@ export class UsersController {
     }
 
     @Post()
-    async addUsers(@Body() body: { email: string; password: string; role?: role }, @Res() res: Response) {
+    async addUsers(@Body() body: { email: string; password: string; role?: role; username: string; name: string }, @Res() res: Response) {
         try {
             const newUser = await this.usersService.createUser(body)
 
             const formatData = {
                 id: newUser.id, 
+                username: newUser.username,
+                mane: newUser.name,
                 email: newUser.email,
                 role: newUser.role, 
                 createdAt: moment(newUser.createdAt).format('YYYY-MM-DD'),
@@ -102,7 +106,7 @@ export class UsersController {
     @Put(':id')
     async updateUser(
         @Param('id') id: string,
-        @Body() body: { email?: string; password?: string; role?: role },
+        @Body() body: { email?: string; password?: string; role?: role; username?: string; name?: string },
         @Res() res: Response
     ) {
         try {
@@ -118,6 +122,8 @@ export class UsersController {
 
             const formatData = {
                 id: updatedUser.id,
+                usernaem: updatedUser.username,
+                name: updatedUser.name,
                 email: updatedUser.email,
                 role: updatedUser.role,
                 createdAt: moment(updatedUser.createdAt).format('YYYY-MM-DD'),
@@ -147,10 +153,41 @@ export class UsersController {
                 });
             }
 
-            const deletedUser = await this.usersService.deleteUser(numericId);
+            const deletedUser = await this.usersService.softDeleteUser(numericId);
+
+            const formatData = {
+                deletedAt: moment(deletedUser.deletedAt).format('YYYY-MM-DD'),
+            };
+
+            return res.status(HttpStatus.OK).json({
+                message: "User deleted successfully", 
+                data: formatData
+            });
+        } catch (error) {
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+                message: 'failed to delete user',
+                error: error.message,
+            });
+        }
+    }
+
+    @Put('/restore/:id')
+    async RestoreUser(@Param('id') id: string, @Res() res: Response) {
+        try {
+            const numericId = Number(id);
+
+            if (isNaN(numericId)) {
+                return res.status(HttpStatus.BAD_REQUEST).json({
+                    message: "Invalid ID format",
+                });
+            }
+
+            const deletedUser = await this.usersService.restoreData(numericId);
 
             const formatData = {
                 id: deletedUser.id,
+                usernaem: deletedUser.username,
+                name: deletedUser.name,
                 email: deletedUser.email,
                 role: deletedUser.role,
                 createdAt: moment(deletedUser.createdAt).format('YYYY-MM-DD'),
@@ -158,7 +195,7 @@ export class UsersController {
             };
 
             return res.status(HttpStatus.OK).json({
-                message: "User deleted successfully", 
+                message: "User restored successfully", 
                 data: formatData
             });
         } catch (error) {
