@@ -1,3 +1,4 @@
+import { AuthService } from './auth/auth.service';
 import { PrismaService } from './../prisma/prisma.service';
 import { PrismaModule } from './../prisma/prisma.module';
 import { Module } from '@nestjs/common';
@@ -6,8 +7,9 @@ import { BookModule } from './book/book.module';
 import { UsersController } from './users/users.controller';
 import { BookController } from './book/book.controller';
 import { ConfigModule } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import { AuthModule } from './auth/auth.module';
+import { AuthController } from './auth/auth.controller';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -16,14 +18,17 @@ import { AuthModule } from './auth/auth.module';
     PrismaModule, 
     ConfigModule.forRoot({
       isGlobal: true,
-    }), AuthModule,
+    }),
+    AuthModule,
   ],
   controllers: [ 
     UsersController, 
-    BookController
+    BookController, 
+    AuthController,
   ],
   providers: [
     PrismaService, 
+    AuthService,
     JwtService
   ],
 })
