@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
 import * as dotenv from 'dotenv';
 import { ConfigService } from '@nestjs/config';
+import { AuthGuard } from '../auth/auth.guard';
 dotenv.config();
 
 @Injectable()
@@ -12,8 +13,21 @@ export class AuthService {
     constructor(
         private prisma: PrismaService,
         private jwtService: JwtService,
-        private readonly configService: ConfigService,
+        private readonly configService: ConfigService
     ) {}
+
+    async validateToken(token: string): Promise<any> {
+        const secret = this.configService.get<string>('JWT_SECRET');
+        if (!secret) {
+            throw new Error('JWT_SECRET is missing or undefined');
+        }
+        try {
+            const decoded = this.jwtService.verify(token, { secret });
+            return decoded;
+        } catch (error) {
+            throw new UnauthorizedException('Invalid token');
+        }
+    }
 
     async register(data: { username: string; name: string; email: string; password: string; }): Promise<User> {
         const saltRounds = 10;
@@ -34,7 +48,7 @@ export class AuthService {
     async login(email: string, password: string): Promise<{ access_token: string }> {
 
         const jwtSecret = this.configService.get<string>('JWT_SECRET');
-
+    
         const user = await this.prisma.user.findUnique({
             where: { email }
         });

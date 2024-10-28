@@ -1,14 +1,15 @@
 import { Response } from 'express';
 import { UsersService } from './users.service';
 import { role } from '@prisma/client';
-import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
 import * as moment from 'moment';
+import { AuthGuard } from '../auth/auth.guard';
 
 @Controller('users')
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
-    // @Roles('admin')
+    @UseGuards(AuthGuard)
     @Get()
     async getUsers(@Res() res: Response) {
         try {
