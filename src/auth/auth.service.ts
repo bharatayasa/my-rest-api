@@ -5,7 +5,6 @@ import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
 import * as dotenv from 'dotenv';
 import { ConfigService } from '@nestjs/config';
-import { AuthGuard } from '../auth/auth.guard';
 dotenv.config();
 
 @Injectable()

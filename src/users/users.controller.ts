@@ -4,13 +4,15 @@ import { role } from '@prisma/client';
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
 import * as moment from 'moment';
 import { AuthGuard } from '../auth/auth.guard';
+import { Roles } from '../auth/roles.decorator';
 
 @Controller('users')
 export class UsersController {
     constructor(private readonly usersService: UsersService) {}
 
-    @UseGuards(AuthGuard)
     @Get()
+    @Roles('admin')
+    @UseGuards(AuthGuard)
     async getUsers(@Res() res: Response) {
         try {
             const users = await this.usersService.findAll();
