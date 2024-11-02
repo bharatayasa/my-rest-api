@@ -2,6 +2,8 @@ import { Body, Controller, Post, Res, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 import * as moment from 'moment';
+import { RegisterDTO } from './register.DTO';
+import { LoginDTO } from './login.DTO';
 
 @Controller('auth')
 export class AuthController {
@@ -9,7 +11,7 @@ export class AuthController {
 
     @Post('register')
     async register(
-        @Body() body: { username: string; name: string; email: string; password: string },
+        @Body() body: RegisterDTO,
         @Res() res: Response
     ) {
         try {
@@ -37,11 +39,11 @@ export class AuthController {
 
     @Post('login')
     async login(
-        @Body() body: { email: string; password: string },
+        @Body() body: LoginDTO,
         @Res() res: Response
     ) {
         try {
-            const { access_token } = await this.authService.login(body.email, body.password);
+            const { access_token } = await this.authService.login(body);
             return res.status(HttpStatus.OK).json({
                 message: 'Login successful',
                 data: {

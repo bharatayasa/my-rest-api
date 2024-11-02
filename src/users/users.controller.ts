@@ -3,8 +3,8 @@ import { UsersService } from './users.service';
 import { role } from '@prisma/client';
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Res, UseGuards } from '@nestjs/common';
 import * as moment from 'moment';
-import { AuthGuard } from '../auth/auth.guard';
-import { Roles } from '../auth/roles.decorator';
+import { AuthGuard } from '../auth/guard/auth.guard';
+import { Roles } from '../auth/guard/roles.decorator';
 
 @Controller('users')
 export class UsersController {

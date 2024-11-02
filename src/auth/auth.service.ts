@@ -5,6 +5,8 @@ import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
 import * as dotenv from 'dotenv';
 import { ConfigService } from '@nestjs/config';
+import { RegisterDTO } from './register.DTO';
+import { LoginDTO } from './login.DTO';
 dotenv.config();
 
 @Injectable()
@@ -28,7 +30,7 @@ export class AuthService {
         }
     }
 
-    async register(data: { username: string; name: string; email: string; password: string; }): Promise<User> {
+    async register(data: RegisterDTO): Promise<User> {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(data.password, saltRounds);
 
@@ -44,19 +46,21 @@ export class AuthService {
         return newUser;
     }
 
-    async login(email: string, password: string): Promise<{ access_token: string }> {
+    async login(data: LoginDTO): Promise<{ access_token: string }> {
 
         const jwtSecret = this.configService.get<string>('JWT_SECRET');
     
         const user = await this.prisma.user.findUnique({
-            where: { email }
+            where: { 
+                email: data.email 
+            }
         });
 
         if (!user) {
             throw new UnauthorizedException('Invalid email or password');
         }
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await bcrypt.compare(data.password, user.password);
 
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid email or password');
